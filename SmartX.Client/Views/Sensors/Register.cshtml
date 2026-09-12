@@ -1,0 +1,72 @@
+﻿@model SmartX.Client.Models.SensorViewModel
+
+@{
+    ViewData["Title"] = "Register Sensor";
+}
+
+<div class="container py-4">
+
+    <h1>Register Sensor</h1>
+
+    <p class="text-muted">
+        Add a Smart-X IoT sensor to the gateway.
+    </p>
+
+    <form asp-action="Register"
+          method="post">
+
+        <div class="mb-3">
+            <label class="form-label">
+                Device MAC / Unique Identifier
+            </label>
+
+            <input asp-for="DeviceId"
+                   class="form-control"
+                   placeholder="ESP32-004" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">
+                Deployment Location
+            </label>
+
+            <input asp-for="DeploymentLocation"
+                   class="form-control"
+                   placeholder="Zone B - Node 4" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">
+                Sensor Category
+            </label>
+
+            <select asp-for="Category"
+                    class="form-select">
+
+                <option value="">
+                    Select category
+                </option>
+
+                <option>
+                    Environmental
+                </option>
+
+                <option>
+                    Power Consumption
+                </option>
+
+                <option>
+                    Actuator
+                </option>
+
+            </select>
+        </div>
+
+        <button class="btn btn-primary"
+                type="submit">
+            Register Sensor
+        </button>
+
+    </form>
+
+</div>
