@@ -1,10 +1,12 @@
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddSingleton<SmartX.Api.Services.RealtimeEngine>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+SmartX.Api.Services.RealtimeBridge.OnReading = app.Services.GetRequiredService<SmartX.Api.Services.RealtimeEngine>().Accept;
 
 if (app.Environment.IsDevelopment())
 {
