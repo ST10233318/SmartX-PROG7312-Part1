@@ -2,9 +2,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
+
 builder.Services.AddHttpClient("SmartXApi", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5259/");
+    client.BaseAddress = new Uri(
+        builder.Configuration["ApiSettings:BaseUrl"]
+        ?? "http://localhost:5277/"
+    );
 });
 
 

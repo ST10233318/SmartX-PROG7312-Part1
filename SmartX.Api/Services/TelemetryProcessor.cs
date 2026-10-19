@@ -1,4 +1,4 @@
-﻿using SmartX.Api.Data;
+using SmartX.Api.Data;
 using SmartX.Api.Models;
 
 namespace SmartX.Api.Services;
@@ -66,6 +66,7 @@ public static class TelemetryProcessor
         };
 
         SmartXStore.Readings.Enqueue(reading);
+        RealtimeBridge.OnReading?.Invoke(reading);
 
         if (SmartXStore.Sensors.TryGetValue(deviceId, out var sensor))
         {
