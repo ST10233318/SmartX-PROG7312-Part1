@@ -9,11 +9,11 @@ public sealed class RealtimeEngine
     private readonly object _gate = new();
     private readonly Queue<SensorReading> _normal = new();
     private readonly PriorityQueue<SensorReading, int> _urgent = new();
-    private readonly Stack<DeviceCommand> _undo = new();
-    private readonly Dictionary<string, DeviceCommand> _lastCommand = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Stack<RealtimeDeviceCommand> _undo = new();
+    private readonly Dictionary<string, RealtimeDeviceCommand> _lastCommand = new(StringComparer.OrdinalIgnoreCase);
     private readonly SortedDictionary<DateTime, SensorReading> _timeline = new();
     private readonly HashSet<string> _activeAlerts = new(StringComparer.OrdinalIgnoreCase);
-    private readonly List<DeviceCommand> _history = new();
+    private readonly List<RealtimeDeviceCommand> _history = new();
     private readonly Dictionary<string, int> _searches = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, int> _actions = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _states = new(StringComparer.OrdinalIgnoreCase);
@@ -56,14 +56,14 @@ public sealed class RealtimeEngine
             return new { queue = "empty", reading = (SensorReading?)null };
         }
     }
-    public DeviceCommand Issue(string deviceId, string action)
+    public RealtimeDeviceCommand Issue(string deviceId, string action)
     {
         lock (_gate)
         {
             if (!SmartXStore.Sensors.ContainsKey(deviceId)) throw new ArgumentException("Unknown device.");
             if (string.IsNullOrWhiteSpace(action) || action.Length > 100) throw new ArgumentException("Action must be 1–100 characters.");
             var previous = _states.GetValueOrDefault(deviceId, "unknown");
-            var command = new DeviceCommand(Guid.NewGuid(), deviceId, action, previous, DateTime.UtcNow, false);
+            var command = new RealtimeDeviceCommand(Guid.NewGuid(), deviceId, action, previous, DateTime.UtcNow, false);
             _undo.Push(command); _history.Add(command); _states[deviceId] = action;
             var key = deviceId + ":" + action;
             _actions[key] = _actions.GetValueOrDefault(key) + 1;
@@ -71,13 +71,13 @@ public sealed class RealtimeEngine
             return command;
         }
     }
-    public DeviceCommand? Undo()
+    public RealtimeDeviceCommand? Undo()
     {
         lock (_gate)
         {
             if (!_undo.TryPop(out var previous)) return null;
             _states[previous.DeviceId] = previous.PreviousState;
-            var reverted = new DeviceCommand(Guid.NewGuid(), previous.DeviceId, previous.PreviousState, previous.Action, DateTime.UtcNow, true);
+            var reverted = new RealtimeDeviceCommand(Guid.NewGuid(), previous.DeviceId, previous.PreviousState, previous.Action, DateTime.UtcNow, true);
             _history.Add(reverted); _lastCommand[previous.DeviceId] = reverted;
             return reverted;
         }
@@ -94,4 +94,4 @@ public sealed class RealtimeEngine
         return suggestions.Count == 0 ? new[] { "No patterns yet. Submit telemetry and issue commands to generate insights." } : suggestions.ToArray();
     }
 }
-public record DeviceCommand(Guid Id, string DeviceId, string Action, string PreviousState, DateTime Timestamp, bool IsUndo);
+public record RealtimeDeviceCommand(Guid Id, string DeviceId, string Action, string PreviousState, DateTime Timestamp, bool IsUndo);
