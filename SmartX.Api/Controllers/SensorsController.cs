@@ -36,6 +36,8 @@ public class SensorsController : ControllerBase
         sensor.IsOnline = true;
 
         SmartXStore.Sensors[sensor.DeviceId] = sensor;
+        HttpContext.RequestServices.GetRequiredService<SmartX.Api.Services.TopologyService>()
+            .AddNode(sensor.DeviceId);
 
         return Ok(sensor);
     }

@@ -1,4 +1,4 @@
-using SmartX.Api.Data;
+﻿using SmartX.Api.Data;
 using SmartX.Api.Models;
 
 namespace SmartX.Api.Services;
@@ -66,7 +66,8 @@ public static class TelemetryProcessor
         };
 
         SmartXStore.Readings.Enqueue(reading);
-        RealtimeBridge.OnReading?.Invoke(reading);
+        // Keep the indexed history in sync with ingestion (UTC timestamp keys).
+        lock (HistoryIndex.Sync) HistoryIndex.Tree.Add(reading);
 
         if (SmartXStore.Sensors.TryGetValue(deviceId, out var sensor))
         {
